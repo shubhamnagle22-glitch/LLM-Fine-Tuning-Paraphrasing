@@ -1,0 +1,12 @@
+torch==2.14.0
+transformers==5.17.0
+datasets==5.0.1
+evaluate
+peft==0.21.0
+accelerate
+sentencepiece
+nltk
+absl-py
+rouge_score
+bert-score==0.3.13
+numpy
