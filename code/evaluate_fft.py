@@ -14,19 +14,24 @@ print("Using:", device)
 if torch.cuda.is_available():
     print("GPU:", torch.cuda.get_device_name(0))
 
+
 # --------------------------------------------------
-# 2. Load fine-tuned model
+# 2. Load improved fine-tuned model
 # --------------------------------------------------
 
-model_path = "./bart_full_finetuned"
+model_path = "./bart_full_finetuned_improved"
 
-print("\nLoading fine-tuned BART model...")
+print("\nLoading improved fine-tuned BART model...")
 
 tokenizer = BartTokenizer.from_pretrained(model_path)
-model = BartForConditionalGeneration.from_pretrained(model_path)
+
+model = BartForConditionalGeneration.from_pretrained(
+    model_path
+)
 
 model = model.to(device)
 model.eval()
+
 
 # --------------------------------------------------
 # 3. Load test dataset
@@ -45,6 +50,7 @@ test_data = dataset["test"].filter(
 )
 
 print("Test examples:", len(test_data))
+
 
 # --------------------------------------------------
 # 4. Generate paraphrases
@@ -97,6 +103,7 @@ for i in range(0, len(test_data), batch_size):
             f"/{len(test_data)}"
         )
 
+
 # --------------------------------------------------
 # 5. Calculate BLEU
 # --------------------------------------------------
@@ -110,6 +117,7 @@ bleu_result = bleu.compute(
     references=[[ref] for ref in references]
 )
 
+
 # --------------------------------------------------
 # 6. Calculate ROUGE
 # --------------------------------------------------
@@ -121,15 +129,19 @@ rouge_result = rouge.compute(
     references=references
 )
 
+
 # --------------------------------------------------
 # 7. Display results
 # --------------------------------------------------
 
 print("\n======================================")
-print("FULL FINE-TUNING RESULTS")
+print("IMPROVED FULL FINE-TUNING RESULTS")
 print("======================================")
 
-print("BLEU:", round(bleu_result["bleu"], 4))
+print(
+    "BLEU:",
+    round(bleu_result["bleu"], 4)
+)
 
 print(
     "ROUGE-1:",
@@ -146,6 +158,7 @@ print(
     round(rouge_result["rougeL"], 4)
 )
 
+
 # --------------------------------------------------
 # 8. Show examples
 # --------------------------------------------------
@@ -158,6 +171,17 @@ for i in range(10):
 
     print("\nExample", i + 1)
 
-    print("Original :", test_data[i]["sentence1"])
-    print("Reference:", references[i])
-    print("Generated:", predictions[i])
+    print(
+        "Original :",
+        test_data[i]["sentence1"]
+    )
+
+    print(
+        "Reference:",
+        references[i]
+    )
+
+    print(
+        "Generated:",
+        predictions[i]
+    )

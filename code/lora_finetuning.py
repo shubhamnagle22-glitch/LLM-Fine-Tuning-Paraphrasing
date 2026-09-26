@@ -22,7 +22,10 @@ if torch.cuda.is_available():
     print("GPU:", torch.cuda.get_device_name(0))
     print(
         "GPU Memory:",
-        round(torch.cuda.get_device_properties(0).total_memory / 1024**3, 2),
+        round(
+            torch.cuda.get_device_properties(0).total_memory / 1024**3,
+            2
+        ),
         "GB"
     )
 
@@ -38,12 +41,25 @@ dataset = load_dataset(
     "en"
 )
 
-# Keep only paraphrase pairs
-dataset = dataset.filter(lambda x: x["label"] == 1)
+# Keep only actual paraphrase pairs
+dataset = dataset.filter(
+    lambda x: x["label"] == 1
+)
 
-print("Training examples:", len(dataset["train"]))
-print("Validation examples:", len(dataset["validation"]))
-print("Test examples:", len(dataset["test"]))
+print(
+    "Training examples:",
+    len(dataset["train"])
+)
+
+print(
+    "Validation examples:",
+    len(dataset["validation"])
+)
+
+print(
+    "Test examples:",
+    len(dataset["test"])
+)
 
 
 # --------------------------------------------------
@@ -54,9 +70,13 @@ print("\nLoading BART-base...")
 
 model_name = "facebook/bart-base"
 
-tokenizer = BartTokenizer.from_pretrained(model_name)
+tokenizer = BartTokenizer.from_pretrained(
+    model_name
+)
 
-model = BartForConditionalGeneration.from_pretrained(model_name)
+model = BartForConditionalGeneration.from_pretrained(
+    model_name
+)
 
 
 # --------------------------------------------------
@@ -86,6 +106,7 @@ model = get_peft_model(
 )
 
 print("\nLoRA trainable parameters:")
+
 model.print_trainable_parameters()
 
 
@@ -203,12 +224,18 @@ print("LoRA TRAINING COMPLETED")
 print("======================================")
 
 print("\nTraining metrics:")
-print(train_result.metrics)
+
+print(
+    train_result.metrics
+)
 
 
 if torch.cuda.is_available():
 
-    peak_memory = torch.cuda.max_memory_allocated() / 1024**3
+    peak_memory = (
+        torch.cuda.max_memory_allocated()
+        / 1024**3
+    )
 
     print(
         "\nPeak GPU memory:",
@@ -223,8 +250,13 @@ if torch.cuda.is_available():
 
 print("\nSaving LoRA model...")
 
-trainer.save_model("./bart_lora")
-tokenizer.save_pretrained("./bart_lora")
+trainer.save_model(
+    "./bart_lora"
+)
+
+tokenizer.save_pretrained(
+    "./bart_lora"
+)
 
 print("\nLoRA model saved to:")
 print("./bart_lora")

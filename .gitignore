@@ -10,7 +10,10 @@ __pycache__/
 
 # Trained model files
 bart_full_finetuned/
+bart_full_finetuned_improved/
 bart_lora/
+bart_lora_3epoch/
+bart_lora_filtered/
 bart_lora/checkpoint-*/
 
 # Hugging Face cache

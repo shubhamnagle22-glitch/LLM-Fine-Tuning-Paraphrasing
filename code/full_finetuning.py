@@ -1,5 +1,8 @@
 import torch
-from datasets import load_dataset
+import re
+
+from datasets import load_dataset, concatenate_datasets
+
 from transformers import (
     BartForConditionalGeneration,
     BartTokenizer,
@@ -20,9 +23,13 @@ if torch.cuda.is_available():
     print("GPU:", torch.cuda.get_device_name(0))
     print(
         "GPU Memory:",
-        round(torch.cuda.get_device_properties(0).total_memory / 1024**3, 2),
+        round(
+            torch.cuda.get_device_properties(0).total_memory / 1024**3,
+            2
+        ),
         "GB"
     )
+
 
 # --------------------------------------------------
 # 2. Load PAWS-X dataset
@@ -36,26 +43,120 @@ dataset = load_dataset(
 )
 
 # Keep only paraphrase pairs
-dataset = dataset.filter(lambda x: x["label"] == 1)
+dataset = dataset.filter(
+    lambda x: x["label"] == 1
+)
 
+print("\nOriginal dataset sizes:")
 print("Training examples:", len(dataset["train"]))
 print("Validation examples:", len(dataset["validation"]))
 print("Test examples:", len(dataset["test"]))
 
+
 # --------------------------------------------------
-# 3. Load BART-base
+# 3. Filter highly similar paraphrase pairs
+# --------------------------------------------------
+
+def word_overlap(sentence1, sentence2):
+
+    words1 = set(
+        re.findall(r"\b\w+\b", sentence1.lower())
+    )
+
+    words2 = set(
+        re.findall(r"\b\w+\b", sentence2.lower())
+    )
+
+    if not words1 or not words2:
+        return 1.0
+
+    intersection = words1.intersection(words2)
+    union = words1.union(words2)
+
+    return len(intersection) / len(union)
+
+
+original_train_size = len(dataset["train"])
+
+dataset["train"] = dataset["train"].filter(
+    lambda x: word_overlap(
+        x["sentence1"],
+        x["sentence2"]
+    ) < 0.90
+)
+
+print(
+    "\nTraining examples after overlap filtering:",
+    len(dataset["train"])
+)
+
+print(
+    "Training examples removed:",
+    original_train_size - len(dataset["train"])
+)
+
+
+# --------------------------------------------------
+# 4. Create bidirectional paraphrase pairs
+# --------------------------------------------------
+
+def create_reverse_pair(example):
+
+    return {
+        "sentence1": example["sentence2"],
+        "sentence2": example["sentence1"],
+        "label": example["label"],
+    }
+
+
+print("\nCreating reverse paraphrase pairs...")
+
+reverse_train = dataset["train"].map(
+    create_reverse_pair
+)
+
+dataset["train"] = concatenate_datasets(
+    [
+        dataset["train"],
+        reverse_train
+    ]
+)
+
+print(
+    "Training examples after bidirectional augmentation:",
+    len(dataset["train"])
+)
+
+print(
+    "Validation examples:",
+    len(dataset["validation"])
+)
+
+print(
+    "Test examples:",
+    len(dataset["test"])
+)
+
+
+# --------------------------------------------------
+# 5. Load BART-base
 # --------------------------------------------------
 
 print("\nLoading BART-base...")
 
 model_name = "facebook/bart-base"
 
-tokenizer = BartTokenizer.from_pretrained(model_name)
+tokenizer = BartTokenizer.from_pretrained(
+    model_name
+)
 
-model = BartForConditionalGeneration.from_pretrained(model_name)
+model = BartForConditionalGeneration.from_pretrained(
+    model_name
+)
+
 
 # --------------------------------------------------
-# 4. Tokenization
+# 6. Tokenization
 # --------------------------------------------------
 
 def tokenize_function(examples):
@@ -85,8 +186,9 @@ tokenized_dataset = dataset.map(
     remove_columns=dataset["train"].column_names,
 )
 
+
 # --------------------------------------------------
-# 5. Data collator
+# 7. Data collator
 # --------------------------------------------------
 
 data_collator = DataCollatorForSeq2Seq(
@@ -94,12 +196,13 @@ data_collator = DataCollatorForSeq2Seq(
     model=model,
 )
 
+
 # --------------------------------------------------
-# 6. Training configuration
+# 8. Training configuration
 # --------------------------------------------------
 
 training_args = TrainingArguments(
-    output_dir="./bart_full_finetuned",
+    output_dir="./bart_full_finetuned_improved",
 
     # Training
     num_train_epochs=1,
@@ -130,8 +233,9 @@ training_args = TrainingArguments(
     report_to="none",
 )
 
+
 # --------------------------------------------------
-# 7. Trainer
+# 9. Trainer
 # --------------------------------------------------
 
 trainer = Trainer(
@@ -145,21 +249,24 @@ trainer = Trainer(
     data_collator=data_collator,
 )
 
+
 # --------------------------------------------------
-# 8. Start Full Fine-Tuning
+# 10. Start Full Fine-Tuning
 # --------------------------------------------------
 
 print("\n======================================")
-print("STARTING FULL FINE-TUNING")
+print("STARTING IMPROVED FULL FINE-TUNING")
 print("======================================\n")
 
 if torch.cuda.is_available():
     torch.cuda.reset_peak_memory_stats()
 
+
 train_result = trainer.train()
 
+
 # --------------------------------------------------
-# 9. Training results
+# 11. Training results
 # --------------------------------------------------
 
 print("\n======================================")
@@ -169,9 +276,13 @@ print("======================================")
 print("\nTraining metrics:")
 print(train_result.metrics)
 
+
 if torch.cuda.is_available():
 
-    peak_memory = torch.cuda.max_memory_allocated() / 1024**3
+    peak_memory = (
+        torch.cuda.max_memory_allocated()
+        / 1024**3
+    )
 
     print(
         "\nPeak GPU memory:",
@@ -179,16 +290,22 @@ if torch.cuda.is_available():
         "GB"
     )
 
+
 # --------------------------------------------------
-# 10. Save final model
+# 12. Save final model
 # --------------------------------------------------
 
-print("\nSaving fine-tuned model...")
+print("\nSaving improved fine-tuned model...")
 
-trainer.save_model("./bart_full_finetuned")
-tokenizer.save_pretrained("./bart_full_finetuned")
+trainer.save_model(
+    "./bart_full_finetuned_improved"
+)
+
+tokenizer.save_pretrained(
+    "./bart_full_finetuned_improved"
+)
 
 print("\nModel saved to:")
-print("./bart_full_finetuned")
+print("./bart_full_finetuned_improved")
 
-print("\nFull fine-tuning finished successfully!")
+print("\nImproved full fine-tuning finished successfully!")
