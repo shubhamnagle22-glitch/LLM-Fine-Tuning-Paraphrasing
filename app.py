@@ -22,7 +22,7 @@ st.set_page_config(
 @st.cache_resource
 def load_model():
 
-    model_path = "./bart_full_finetuned_improved"
+    model_path = "Shubham22122/bart-paraphrasing-finetuned"
 
     tokenizer = BartTokenizer.from_pretrained(
         model_path
