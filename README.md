@@ -315,9 +315,11 @@ The application allows a user to:
 2. Generate a paraphrase using the fine-tuned BART model.
 3. View the generated output.
 
-The current demonstration uses:
+The current demonstration uses the fine-tuned BART model hosted on Hugging Face:
 
-`bart_full_finetuned_improved`
+`Shubham22122/bart-paraphrasing-finetuned`
+
+The Streamlit application loads the fine-tuned model from the Hugging Face repository.
 
 Run the application using:
 
