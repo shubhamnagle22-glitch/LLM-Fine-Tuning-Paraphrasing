@@ -66,7 +66,6 @@ sentence = st.text_area(
 components.html(
     """
     <script>
-
     document.addEventListener("keydown", function(event) {
 
         if (event.key === "Enter" && !event.shiftKey) {
@@ -94,13 +93,9 @@ components.html(
                 if (generateButton) {
                     generateButton.click();
                 }
-
             }
-
         }
-
     });
-
     </script>
     """,
     height=0
@@ -156,6 +151,20 @@ if st.button(
                 skip_special_tokens=True
             )
 
+            # Clean up generated text spacing
+            paraphrase = " ".join(paraphrase.split())
+
+            # Correct spacing before common punctuation
+            paraphrase = paraphrase.replace(" .", ".")
+            paraphrase = paraphrase.replace(" ,", ",")
+            paraphrase = paraphrase.replace(" !", "!")
+            paraphrase = paraphrase.replace(" ?", "?")
+            paraphrase = paraphrase.replace(" :", ":")
+            paraphrase = paraphrase.replace(" ;", ";")
+
+            # Remove spaces immediately inside quotation marks
+            paraphrase = paraphrase.replace("( ", "(")
+            paraphrase = paraphrase.replace(" )", ")")
 
         # --------------------------------------------------
         # Display result
