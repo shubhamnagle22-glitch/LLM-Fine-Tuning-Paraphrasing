@@ -46,9 +46,7 @@ For example:
 
 > He bought a new laptop yesterday.
 
-Further model information is documented in:
-
-`MODEL_CARD.md`
+Further model information is documented in `MODEL_CARD.md`.
 
 ---
 
@@ -91,9 +89,7 @@ Only examples labelled as paraphrases (`label = 1`) were used for the generative
 
 The input is `sentence1` and the target output is `sentence2`.
 
-The dataset preparation details are documented in:
-
-`DATASET_CARD.md`
+The dataset preparation details are documented in `DATASET_CARD.md`.
 
 ### Original Dataset Size
 
@@ -214,9 +210,7 @@ The project was implemented using Python and the following libraries:
 - BERTScore
 - Streamlit
 
-The complete Python dependencies are provided in:
-
-`requirements.txt`
+The complete Python dependencies are provided in `requirements.txt`.
 
 ---
 
@@ -232,6 +226,14 @@ The following metrics were used:
 - ROUGE-L
 - BERTScore F1
 
+The evaluation scripts use the same generation settings for the four models:
+
+- Input maximum length: 128
+- Generation maximum length: 128
+- Number of beams: 4
+- Early stopping: enabled
+- Test examples: 907
+
 Qualitative examples were also examined to assess how substantially the generated sentences differed from the original inputs.
 
 ---
@@ -242,10 +244,10 @@ Qualitative examples were also examined to assess how substantially the generate
 
 | Model | BLEU | ROUGE-1 | ROUGE-2 | ROUGE-L | BERTScore F1 |
 |---|---:|---:|---:|---:|---:|
-| BART-base | 0.6515 | 0.9314 | 0.7624 | 0.8486 | N/A |
-| BART Full Fine-Tuning | 0.6480 | 0.9295 | 0.7678 | 0.8486 | N/A |
-| BART LoRA | 0.6433 | 0.9271 | 0.7613 | 0.8471 | 0.9766 |
-| BART Improved Full Fine-Tuning | 0.6480 | 0.9280 | 0.7687 | 0.8481 | N/A |
+| BART-base | 0.6515 | 0.9314 | 0.7624 | 0.8487 | N/A |
+| BART Full Fine-Tuning | 0.6480 | 0.9296 | 0.7677 | 0.8483 | N/A |
+| BART LoRA | 0.6433 | 0.9270 | 0.7613 | 0.8472 | 0.9766 |
+| BART Improved Full Fine-Tuning | 0.6480 | 0.9280 | 0.7686 | 0.8480 | N/A |
 
 ### 9.2 Resource Comparison
 
@@ -255,7 +257,21 @@ Qualitative examples were also examined to assess how substantially the generate
 | BART LoRA | 20.88 min | 0.88 GB | 442,368 | 0.3163% |
 | BART Improved Full Fine-Tuning | 90.75 min | 2.58 GB | 139,862,784 | 100% |
 
+The recorded training times and GPU memory values are historical measurements from the respective training experiments.
+
 The improved Full Fine-Tuning experiment required more training time because it used 25,104 bidirectional training examples compared with 21,829 examples in the original Full Fine-Tuning experiment.
+
+### 9.3 Interpretation of Results
+
+The baseline achieved the highest BLEU, ROUGE-1 and ROUGE-L scores among the four evaluated models.
+
+The improved Full Fine-Tuning model achieved the highest ROUGE-2 score.
+
+The LoRA model produced scores close to those of the full fine-tuning models while updating only 0.3163% of the model parameters.
+
+These results indicate that fine-tuning did not produce a substantial improvement across all automatic evaluation metrics compared with the pre-trained baseline.
+
+The results should not be interpreted as accuracy percentages. BLEU and ROUGE measure different forms of overlap between generated text and reference text.
 
 ---
 
@@ -263,7 +279,7 @@ The improved Full Fine-Tuning experiment required more training time because it 
 
 The generated outputs frequently remained close to the original input sentences.
 
-For example, the fine-tuned model sometimes reproduced the input almost exactly:
+For example, the fine-tuned model sometimes reproduced the input almost exactly.
 
 **Input:**
 
@@ -273,7 +289,7 @@ For example, the fine-tuned model sometimes reproduced the input almost exactly:
 
 > She purchased a new laptop yesterday.
 
-However, the improved model was also capable of producing meaningful lexical changes in some cases.
+However, the model could also produce meaningful lexical changes in some cases.
 
 **Input:**
 
@@ -326,3 +342,76 @@ Run the application using:
 ```bash
 python -m streamlit run app.py
 ```
+
+---
+
+## 13. Project Structure
+
+The repository contains the following key files and directories:
+
+- `app.py` — Streamlit demonstration
+- `code/` — Training, evaluation and data preparation scripts
+- `results/results.csv` — Quantitative evaluation results and resource measurements
+- `MODEL_CARD.md` — Model documentation
+- `DATASET_CARD.md` — Dataset documentation
+- `requirements.txt` — Python dependencies
+
+---
+
+## 14. Limitations
+
+This project has several limitations:
+
+- The experiments use only the English subset of PAWS-X.
+- The test set contains 907 paraphrase examples.
+- Automatic metrics do not fully measure semantic preservation or the diversity of generated paraphrases.
+- Generated outputs frequently remain close to the original input.
+- The BERTScore F1 result is currently recorded for the LoRA model only, so a complete BERTScore comparison across all four models is not available.
+- The experiments use a limited number of training epochs and a single main model architecture.
+- Results may differ with other datasets, generation settings or model architectures.
+
+These limitations should be considered when interpreting the results and evaluating the usefulness of the system for real-world paraphrasing tasks.
+
+---
+
+## 15. Future Work
+
+Potential future improvements include:
+
+- Evaluating BERTScore consistently across all four models.
+- Investigating additional training configurations and hyperparameters.
+- Examining methods that encourage greater paraphrase diversity while preserving meaning.
+- Comparing the results against additional sequence-to-sequence models.
+- Evaluating the model on additional paraphrasing datasets.
+- Investigating human evaluation of meaning preservation, grammaticality and diversity.
+
+---
+
+## 16. Running the Project
+
+### Prerequisites
+
+- Python 3.11
+- An appropriate PyTorch installation
+- The required dependencies listed in `requirements.txt`
+
+### Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### Run the Demonstration
+
+```bash
+python -m streamlit run app.py
+```
+
+---
+
+## 17. Repository
+
+The source code, evaluation scripts, documentation and results are maintained in the project repository.
+
+- GitHub: `https://github.com/shubhamnagle22-glitch/LLM-Fine-Tuning-Paraphrasing`
+- Coventry University GitHub: `https://github.coventry.ac.uk/nagles3/LLM-Fine-Tuning-Paraphrasing`

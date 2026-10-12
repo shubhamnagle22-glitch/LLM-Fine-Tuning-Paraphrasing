@@ -45,8 +45,9 @@ for i in range(0, len(test_data), 4):
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
-            max_new_tokens=64,
-            num_beams=4
+            max_length=128,
+            num_beams=4,
+            early_stopping=True
         )
 
     generated = tokenizer.batch_decode(
